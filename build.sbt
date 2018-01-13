@@ -93,10 +93,12 @@ import java.io.File
 lazy val unmanagedSettings = unmanagedBase := {
   val path = baseDirectory.value / "lib"
   val scalaPartialVersion = CrossVersion partialVersion scalaVersion.value
-  scalaPartialVersion.collect {
-    case (2, y) if y == 11 => new File(path + "-2.11")
-    case (2, y) if y >= 12 => new File(path + "-2.12")
-  }.toList
+  scalaPartialVersion match {
+    case Some((2, y)) if y == 11 => new File(path + "-2.11")
+    case Some((2, y)) if y == 12 => new File(path + "-2.12")
+    case Some((2, y)) => sys.error(s"Scala version 2.${y} not handled!")
+    case None => sys.error("Scala version could not be parsed!")
+  }
 }
 
 lazy val scalaMacroDependencies: Seq[Setting[_]] = Seq(
