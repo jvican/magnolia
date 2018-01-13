@@ -90,13 +90,14 @@ lazy val publishSettings = Seq(
 
 import java.io.File
 
-lazy val unmanagedSettings = unmanagedBase := (scalaVersion.value
-  .split("\\.")
-  .map(_.toInt)
-  .to[List] match {
-  case List(2, 12, _) => baseDirectory.value / "lib" / "2.12"
-  case List(2, 11, _) => baseDirectory.value / "lib" / "2.11"
-})
+lazy val unmanagedSettings = unmanagedBase := {
+  val path = baseDirectory.value / "lib"
+  val scalaPartialVersion = CrossVersion partialVersion scalaVersion.value
+  scalaPartialVersion.collect {
+    case (2, y) if y == 11 => new File(path + "-2.11")
+    case (2, y) if y >= 12 => new File(path + "-2.12")
+  }.toList
+}
 
 lazy val scalaMacroDependencies: Seq[Setting[_]] = Seq(
   libraryDependencies += "org.scala-lang" % "scala-reflect" % scalaVersion.value,
